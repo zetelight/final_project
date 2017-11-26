@@ -39,5 +39,5 @@ open your browser and go to localhost:5000
 
 ## Requirement
 
-1.a creidential file
+1.a credential file
 2.one google calendar json file
