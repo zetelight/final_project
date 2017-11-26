@@ -30,8 +30,7 @@ Finally creator can see free time during the date/time range by clicking 'free t
 
 ## Usage
 
-'''
-git clone < repo link > < your directory >
+'''git clone < repo link > < your directory >
 cd < your directory >
 make run
 open your browser and go to localhost:5000
@@ -39,5 +38,5 @@ open your browser and go to localhost:5000
 
 ## Requirement
 
-1.a credential file
-2.one google calendar json file
+  1.a credential file
+  2.one google calendar json file
