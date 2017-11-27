@@ -7,3 +7,5 @@ urllib3
 nose
 pep8
 autopep8
+gunicorn
+pymongo

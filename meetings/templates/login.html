@@ -1,0 +1,44 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html lang="en">
+<head>
+    <title>Log in</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap includes javascript and css (must follow jquery) -->
+    <link rel="stylesheet"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <script
+            src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js">
+    </script>
+    <link rel="stylesheet" type="text/css"
+          href="//cdn.jsdelivr.net/bootstrap/latest/css/bootstrap.css"
+    />
+    <link rel="stylesheet" type="text/css"
+          href="/static/css/login.css"
+    />
+
+</head>
+
+<body>
+<div class="container">
+    <!-- Credit: https://pythonspot.com/en/login-authentication-with-flask/ -->
+
+    <h1>Login in</h1>
+
+    {% block body %}
+    {% if session['logged_in'] %}
+    <p>You're logged in!</p>
+    {% else %}
+    <form action="/login" method="POST">
+      <input type="username" name="username" placeholder="Username">
+      <input type="password" name="password" placeholder="Password">
+      <input type="submit" value="Log in">
+    </form>
+    {% endif %}
+    {% endblock %}
+
+
+
+</div>  <!-- container (for bootstrap) -->
+</body>
+</html>

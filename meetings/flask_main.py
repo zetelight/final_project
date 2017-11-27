@@ -3,7 +3,7 @@ from flask import render_template
 from flask import request
 from flask import url_for
 import uuid
-
+import sys
 import json
 import logging
 
@@ -23,6 +23,9 @@ from apiclient import discovery
 # import Data structure
 from Model import CalendarEvent
 
+# Mongo database
+from pymongo import MongoClient
+
 ###
 # Globals
 ###
@@ -33,24 +36,78 @@ if __name__ == "__main__":
 else:
     CONFIG = config.configuration(proxied=True)
 
-global object_event_list
 app = flask.Flask(__name__)
 app.debug = CONFIG.DEBUG
 app.logger.setLevel(logging.DEBUG)
 app.secret_key = CONFIG.SECRET_KEY
+MONGO_CLIENT_URL = "mongodb://{}:{}@{}:{}/{}".format(
+    CONFIG.DB_USER,
+    CONFIG.DB_USER_PW,
+    CONFIG.DB_HOST,
+    CONFIG.DB_PORT,
+    CONFIG.DB)
+
+print("Using URL '{}'".format(MONGO_CLIENT_URL))
 
 SCOPES = 'https://www.googleapis.com/auth/calendar.readonly'
 CLIENT_SECRET_FILE = CONFIG.GOOGLE_KEY_FILE  # You'll need this
 APPLICATION_NAME = 'MeetMe class project'
 
+####
+# Database connection per server process
+###
+
+try:
+    dbclient = MongoClient(MONGO_CLIENT_URL)
+    db = getattr(dbclient, CONFIG.DB)
+    collection = db.dated
+
+except:
+    print("Failure opening database.  Is Mongo running? Correct password?")
+    sys.exit(1)
 
 #############################
 #
 #  Pages (routed from URLs)
+#  Credit: https://pythonspot.com/en/login-authentication-with-flask/
 #
 #############################
 
 @app.route("/")
+@app.route("/home")
+def home():
+    app.logger.debug("Entering home page")
+    if flask.session.get["logined"]:
+        return index()
+    else:
+        return render_template('login.html')
+
+@app.route("/login", methods=['POST'])
+def login():
+    # Since this project doesn't require highly encrypt users' password and username
+    # I didn't have some nice way to hide them
+    input_username = request.form.get('username')
+    input_password = request.form.get('password')
+
+    #TODO Check with database
+    # if existing, check with password/username.
+    # Otherwise create new one for new users
+    if input_username not in the database:
+        #TODO create username and password for this one
+
+        flask.session["logined"] = True
+    else:
+        if username.password is right:
+            flask.session["logined"] = True
+        else:
+            flask.flash("Wrong password!")
+    return home()
+
+@app.route("/logout")
+def logout():
+    flask.session["logined"] = False
+    return home()
+
 @app.route("/index")
 def index():
     app.logger.debug("Entering index")
@@ -323,6 +380,21 @@ def free():
     flask.g.free_events = free_translated_list
     return render_template('index.html')
 
+@app.route("/_dataAllin", methods=["POST"])
+def dataAllin():
+    """
+    submit final free/busy time choosed by users
+    """
+    #TODO read all free events and store them into database according to the user name and instance id
+    pass
+
+@app.route("/_checkFinalFree", methods=["POST"])
+def dcheckFinalFree():
+    """
+    Check final free time so far. It is only avaliable for creator
+    """
+    #TODO compute final free time and then render template
+    pass
 
 ####
 #

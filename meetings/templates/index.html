@@ -60,6 +60,16 @@
         {% endif %}
     {% endwith %}
 
+    <h2>Share link with other members!</h2>
+    <div>
+        <!--The button here should be only avaliable for creator-->
+        <form id="select" action="/_select" method="POST">
+            <input type="submit" value="check final free time" id="finalfree"/>
+            <!--TODO: HAVE A LINK HERE-->
+        </form>
+    </div>
+
+    
     <h2>Date & Time range</h2>
     <form action="/setrange" method="post">
         <input type="text" name="daterange" size="12"
@@ -155,11 +165,18 @@
     </div>
 
     <div>
+        <form id ="dataAllin" action="/_dataAllin" method="POST">
         {% if g.free_events is defined %}
             {% for event in g.free_events %}
                 <strong>{{ event.status }} </strong> start: {{ event.start_time }} end: {{ event.end_time }} summary: {{ event.summary }} description: {{ event.description}} <br>
             {% endfor %}
         {% endif %}
+        <p> 
+            You still can re-pick time-range(if you are creator), calendars, and re-mark some events as free time
+            After you submit, all data will be recorded!
+        </p>
+        <input type="submit" value="Submit your decision" id="finalDecision"/>
+        </form>
     </div>
 
 
