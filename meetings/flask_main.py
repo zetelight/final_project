@@ -73,14 +73,17 @@ except:
 #
 #############################
 
+
 @app.route("/")
 @app.route("/home")
 def home():
     app.logger.debug("Entering home page")
-    if flask.session.get["logined"]:
+    if True:
+        # if flask.session.get["logined"]:
         return index()
     else:
         return render_template('login.html')
+
 
 @app.route("/login", methods=['POST'])
 def login():
@@ -89,24 +92,26 @@ def login():
     input_username = request.form.get('username')
     input_password = request.form.get('password')
 
-    #TODO Check with database
+    # TODO Check with database
     # if existing, check with password/username.
     # Otherwise create new one for new users
-    if input_username not in the database:
-        #TODO create username and password for this one
+    # if input_username not in the database:
+    #     # TODO create username and password for this one
 
-        flask.session["logined"] = True
-    else:
-        if username.password is right:
-            flask.session["logined"] = True
-        else:
-            flask.flash("Wrong password!")
+    #     flask.session["logined"] = True
+    # else:
+    #     if username.password is right:
+    #         flask.session["logined"] = True
+    #     else:
+    #         flask.flash("Wrong password!")
     return home()
+
 
 @app.route("/logout")
 def logout():
     flask.session["logined"] = False
     return home()
+
 
 @app.route("/index")
 def index():
@@ -357,7 +362,8 @@ def free():
         # get the whole day object for each day
         new_arrow_date = arrow_date.shift(days=+i)
         date = new_arrow_date.isoformat().split("T")[0]
-        whole_day = CalendarEvent.CalendarEvent(start_time, end_time, date, status="FREE")
+        whole_day = CalendarEvent.CalendarEvent(
+            start_time, end_time, date, status="FREE")
         app.logger.debug(whole_day)
         # grab busy events in the same date
         single_day_events = CalendarEvent.Agenda()
@@ -380,20 +386,22 @@ def free():
     flask.g.free_events = free_translated_list
     return render_template('index.html')
 
+
 @app.route("/_dataAllin", methods=["POST"])
 def dataAllin():
     """
     submit final free/busy time choosed by users
     """
-    #TODO read all free events and store them into database according to the user name and instance id
+    # TODO read all free events and store them into database according to the user name and instance id
     pass
 
+
 @app.route("/_checkFinalFree", methods=["POST"])
-def dcheckFinalFree():
+def checkFinalFree():
     """
     Check final free time so far. It is only avaliable for creator
     """
-    #TODO compute final free time and then render template
+    # TODO compute final free time and then render template
     pass
 
 ####
@@ -555,7 +563,8 @@ def list_events(service, calendar_id):
         events, a sorted list of event according to start time
     """
     app.logger.debug("Begin to retrieve events of calendar")
-    event_list = service.events().list(calendarId=calendar_id).execute()["items"]
+    event_list = service.events().list(
+        calendarId=calendar_id).execute()["items"]
     events = []
     for event in event_list:
 
@@ -577,7 +586,7 @@ def list_events(service, calendar_id):
             end_time = event["end"]["dateTime"]
         except KeyError:
             continue
-        
+
         try:
             summary = event["summary"]
         except KeyError:
@@ -630,7 +639,8 @@ def translator_dictToObject(event):
     id = event["id"]
     summary = event["summary"]
     desc = event["description"]
-    event_obj = CalendarEvent.CalendarEvent(s_time, e_time, date, summary, desc, id)
+    event_obj = CalendarEvent.CalendarEvent(
+        s_time, e_time, date, summary, desc, id)
     return event_obj
 
 

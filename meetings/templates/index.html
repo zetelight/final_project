@@ -139,28 +139,25 @@
         <form id ="free" action="/_free" method="POST">
         {% if g.events is defined %}
         <div>
-            <br><strong> Your busy appointments below: (from left to right, top to bottom)</strong>
-            <br><strong> I am really not good at formatting in HTML.</strong>
-            <br><strong> Please notice that my codes do sorting for different calendars but I don't have a nice way to split different calendar</strong>
+            <div>
+                <strong> Your busy appointments below: (from left to right, top to bottom)</strong>
+            </div>
                 {% for each in g.events %}
                     {% for event in each %}
                         <div class="col-md-4">
                             <input type="checkbox" name="mark" id="mark" value={{ event.id }}>
-                            start time:
-                            {{ event.start_time }}<br/>
-                            end time:
-                            {{ event.end_time }} <br/>
-                            Summary:
-                            {{ event.summary }} <br/>
-                            Description:
-                            {{ event.description }} <br/>
-
+                            <li>start time: {{ event.start_time }} </li>
+                            <li>end time: {{ event.end_time }} </li>
+                            <li>Summary: {{ event.summary }} </li>
+                            <li>Description: {{ event.description }} </li>
                         </div>
                     {% endfor %}
                     <br>
                 {% endfor %}
         {% endif %}
-        <input type="submit" value="mark events as free events" id="freeCalendarButton"/>
+        <div>
+            <input type="submit" value="mark events as free events" id="freeCalendarButton"/>
+        </div>
         </form>
     </div>
 
@@ -171,11 +168,13 @@
                 <strong>{{ event.status }} </strong> start: {{ event.start_time }} end: {{ event.end_time }} summary: {{ event.summary }} description: {{ event.description}} <br>
             {% endfor %}
         {% endif %}
-        <p> 
+        <div> 
             You still can re-pick time-range(if you are creator), calendars, and re-mark some events as free time
             After you submit, all data will be recorded!
-        </p>
-        <input type="submit" value="Submit your decision" id="finalDecision"/>
+        </div>
+        <div>
+            <input type="submit" value="Submit your decision" id="finalDecision"/>
+        </div>
         </form>
     </div>
 

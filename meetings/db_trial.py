@@ -40,30 +40,17 @@ except Exception as err:
 # run successfuly inserted them
 #
 #
-# record = {"type": "dated_memo",
-#           "date": arrow.utcnow().naive,
-#           "text": "This is a sample memo",
-#           "token": 1}
-#
-# print("Inserting 1")
-# collection.insert_one(record)
-# print("Inserted")
-# print(record)
-# record = {"type": "dated_memo",
-#           "date": arrow.utcnow().replace(days=+1).naive,
-#           "text": "Sample one day later",
-#           "token": 2}
-#
-# print("Inserting 2")
-# collection.insert_one(record)
-# print("Inserted")
-# #
-# # print(record)
-# date = arrow.utcnow().to(tz.gettz('US/Pacific')).naive
-# print(date)
-# new_date = arrow.get("05/22/2017", "MM/DD/YYYY")
-# new_date = new_date.replace(tzinfo='US/Pacific').naive
-# print(new_date)
+record = {"type": "dated_memo",
+          "date": arrow.utcnow().naive,
+          "text": "This is a sample memo",
+          "token": 1}
+
+print("Inserting 1")
+collection.insert_one(record)
+print("Inserted")
+print(record)
+
+
 
 
 #
