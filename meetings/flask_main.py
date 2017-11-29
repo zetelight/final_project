@@ -6,6 +6,7 @@ import uuid
 import sys
 import json
 import logging
+import uuid
 
 # Date handling
 import arrow  # Replacement for datetime, based on moment.js
@@ -69,7 +70,7 @@ except:
 #############################
 #
 #  Pages (routed from URLs)
-#  Credit: https://pythonspot.com/en/login-authentication-with-flask/
+#  Login page from Credit: https://pythonspot.com/en/login-authentication-with-flask/
 #
 #############################
 
@@ -78,8 +79,13 @@ except:
 @app.route("/home")
 def home():
     app.logger.debug("Entering home page")
-    if True:
-        # if flask.session.get["logined"]:
+    # get the unique id.
+    unique_list = str(uuid.uuid4()).split("-")[0]
+    unique_id = "".join(unique_list)
+    flask.session["unique_id"] = unique_id
+    app.logger.debug(unique_id)
+
+    if flask.session.get["logined"]:
         return index()
     else:
         return render_template('login.html')
@@ -88,22 +94,32 @@ def home():
 @app.route("/login", methods=['POST'])
 def login():
     # Since this project doesn't require highly encrypt users' password and username
-    # I didn't have some nice way to hide them
+    # I didn't have some nice ways to hide them
+
     input_username = request.form.get('username')
     input_password = request.form.get('password')
 
-    # TODO Check with database
+    # Check username and password with database
     # if existing, check with password/username.
     # Otherwise create new one for new users
-    # if input_username not in the database:
-    #     # TODO create username and password for this one
-
-    #     flask.session["logined"] = True
-    # else:
-    #     if username.password is right:
-    #         flask.session["logined"] = True
-    #     else:
-    #         flask.flash("Wrong password!")
+    right_user = collection.find_one({"username": input_username}) # it return None if find nothing
+    if right_user:
+        # the username exsits
+        if input_password == right_user["password"]:
+            app.logger.debug("You logged in! with exsiting account")
+            flask.session["logined"] = True
+        else:
+            # wrong password
+            app.logger.debug("Wrong password")
+            flask.flash("Wrong password!")
+            flask.session["logined"] = False
+    else:
+        # if the username doesn't exist, let us create one!
+        user = {"username": input_username,
+                "password": input_password}
+        collection.insert_one(user)
+        app.logger.debug("You logged in! with new account")
+        flask.session["logined"] = True
     return home()
 
 
@@ -113,12 +129,20 @@ def logout():
     return home()
 
 
-@app.route("/index")
+@app.route("/index/")
 def index():
     app.logger.debug("Entering index")
+    app.logger.debug("index id: " + id)
     if 'begin_date' not in flask.session:
         init_session_values()
     return render_template('index.html')
+
+@app.route("/app/<id>")
+def workonMeeting(id):
+    flask.session["unique_id"] = id
+    # TODO set up id and time for members
+
+    return home()
 
 
 @app.route("/choose")

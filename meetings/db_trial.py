@@ -40,15 +40,41 @@ except Exception as err:
 # run successfuly inserted them
 #
 #
+
+collection.delete_many({})
+
 record = {"type": "dated_memo",
           "date": arrow.utcnow().naive,
-          "text": "This is a sample memo",
-          "token": 1}
+          "summary": "This is a sample memo",
+          "description": "what happened?!"}
 
+string = "dated_memo"
+string2 = "what happened?!"
 print("Inserting 1")
 collection.insert_one(record)
 print("Inserted")
 print(record)
+
+print("try to find it------------")
+right_person = collection.find_one({"type": string})
+wrong_person = collection.find_one({"ha":"ha"})
+if right_person:
+    if string2 == right_person["description"]:
+        print("Your matched!")
+    print(right_person['_id'])
+    print("try to update it")  
+    collection.update({'type': string}, {'$set': {"events":{"start": 1, "end": 0}}}, upsert = True)
+else:
+    print("You find nothing")
+
+right_person = collection.find_one({"type": string})
+print(right_person)
+
+if wrong_person:
+    print("hahahaha")
+else:
+    print("wtf")
+
 
 
 
@@ -59,17 +85,17 @@ print(record)
 # but they aren't very readable.  If you have more than a couple records,
 # you'll want a loop for printing them in a nicer format. 
 #
-# collection.delete_many({})
 
-print("Reading database")
 
-records = []
-for record in collection.find({"type": "dated_memo"}):
-    records.append(
-        {"type": record['type'],
-         "date": arrow.get(record['date']).to('local').isoformat(),
-         "text": record['text'],
-         "token": record['token']})
+# print("Reading database")
 
-print("Records: ")
-print(records)
+# records = []
+# for record in collection.find({"type": "dated_memo"}):
+#     records.append(
+#         {"type": record['type'],
+#          "date": arrow.get(record['date']).to('local').isoformat(),
+#          "summary": record['summary'],
+#          "description": record['description']})
+
+# print("Records: ")
+# print(records)
