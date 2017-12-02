@@ -1,44 +1,54 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html lang="en">
-<head>
-    <title>Log in</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- Bootstrap includes javascript and css (must follow jquery) -->
-    <link rel="stylesheet"
-          href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-    <script
-            src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js">
-    </script>
-    <link rel="stylesheet" type="text/css"
-          href="//cdn.jsdelivr.net/bootstrap/latest/css/bootstrap.css"
-    />
-    <link rel="stylesheet" type="text/css"
-          href="/static/css/login.css"
-    />
+<head>
+      <title>Log in</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+
+      <!-- Bootstrap includes javascript and css (must follow jquery) -->
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js">
+      </script>
+      <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap/latest/css/bootstrap.css" />
+      <link rel="stylesheet" type="text/css" href="/static/css/login.css" />
 
 </head>
 
 <body>
-<div class="container">
-    <!-- Credit: https://pythonspot.com/en/login-authentication-with-flask/ -->
+      <div class="container">
 
-    <h1>Login in</h1>
+            <!-- Credit: https://pythonspot.com/en/login-authentication-with-flask/ -->
 
-    {% block body %}
-    {% if session['logged_in'] %}
-    <p>You're logged in!</p>
-    {% else %}
-    <form action="/login" method="POST">
-      <input type="username" name="username" placeholder="Username">
-      <input type="password" name="password" placeholder="Password">
-      <input type="submit" value="Log in">
-    </form>
-    {% endif %}
-    {% endblock %}
+            <h1>Login in</h1>
 
-
-
-</div>  <!-- container (for bootstrap) -->
+            {% block body %} {% if session['logged_in'] %}
+            <p>You're logged in!</p>
+            {% else %}
+            <div class="row">
+                  Enter you username and password
+                  <br/> If you don't have one, just enter any username/password you like. We create one for you!
+                  <br/> Note: The username and password here are not protected. Don't use your usual username/password.
+                  <br/> But you may still need remember them so you can go back to check fianl free time (if you are the creator
+                  of meeting)
+                  <br/>
+            </div>
+            <form action="/login" method="POST">
+                  <input type="username" name="username" placeholder="Username">
+                  <input type="password" name="password" placeholder="Password">
+                  <input type="submit" value="Log in">
+            </form>
+            {% endif %} {% endblock %}
+            <div>
+                  {% with messages = get_flashed_messages() %} {% if messages %}
+                  <ul class=flashes>
+                        {% for message in messages %}
+                        <strong>{{ message }}</strong>
+                        {% endfor %}
+                  </ul>
+                  {% endif %} {% endwith %}
+            </div>
+      </div>
+      <!-- container (for bootstrap) -->
 </body>
+
 </html>

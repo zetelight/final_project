@@ -13,7 +13,7 @@ Snarf appointment data from a selection of a user's Google calendars with busy/f
 
 Application allows a creator to choose a date and time range for listing all free and busy events during that period
 
-- it will ask user login in with google account
+- it will ask user login in with customizable username and password
 - user can choose calendars to display all calednars and select events in selected calendars, then 'submit'
 - after displaying all busy events, users still can mark some events being ingored, then 'submit'
 - Free and busy time will be shown in order
@@ -22,7 +22,7 @@ Creator can share a link to group members so that they can pick their own busy t
 
 - group members can share their link to others too!
 
-Finally creator can see free time during the date/time range by clicking 'free time' button
+Finally creator can see free time during the date/time range by clicking ' check final free time' button
 
 ## Test
 
@@ -41,3 +41,7 @@ open your browser and go to localhost:5000
 
 1. a credential file
 2. one google calendar json file
+
+## Known bugs
+1. If the time range is from 00:00 to 00:00, there's no output. Please use 00:00 to 23:59
+2. ugly layout of page !

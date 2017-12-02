@@ -61,17 +61,27 @@
     {% endwith %}
 
     <h2>Share link with other members!</h2>
-    <div>
-        <!--The button here should be only avaliable for creator-->
-        <form id="select" action="/_select" method="POST">
-            <input type="submit" value="check final free time" id="finalfree"/>
-            <!--TODO: HAVE A LINK HERE-->
-        </form>
-    </div>
+        <div>
+            {% if session.link is defined %}
+                <!--The button here should be only avaliable for creator-->
+                link: {{session.link}}/workonMeeting/{{session.unique_id}}
+                {% if session.real_start_time is not defined %}
+                <form id="checkFinal" action="/_checkFinalFree" method="POST">
+                    <input type="submit" value="check final free time" id="finalfree"/>
+                    {% if g.ultimate_free_events is defined %}
+                        {% for event in ultimate_free_events %}
+                        <strong>{{ event.status }} </strong> start: {{ event.start_time }} end: {{ event.end_time }} summary: {{ event.summary }} description: {{ event.description}} <br>
+                        {% endfor %}
+                    {% endif %}
+                </form>
+                {% endif %}
+            {% endif %}
+        </div>
 
     
     <h2>Date & Time range</h2>
     <form action="/setrange" method="post">
+        {% if session.real_start_time is not defined %}
         <input type="text" name="daterange" size="12"
                 {% if session.daterange is defined %}
                value="{{ session.daterange }}"
@@ -79,6 +89,7 @@
                class="pull-down"
                style="background: #fff; cursor: pointer; padding: 5px 10px;
      border: 1px solid #ccc; width: 22em">
+        {% endif %}
         <script type="text/javascript">
             $(function () {
                 $('input[name="daterange"]').daterangepicker(
@@ -103,7 +114,7 @@
                 );
             });
         </script>
-        <br/><input type="submit" value="Start!"/>
+        <input type="submit" value="Start!"/>
 
     </form>
 
@@ -173,10 +184,17 @@
             After you submit, all data will be recorded!
         </div>
         <div>
-            <input type="submit" value="Submit your decision" id="finalDecision"/>
+            <strong>After you submit your events, please log out</strong>
+            <div>
+                <input type="submit" value="Submit your decision" id="finalDecision"/>
+            </div>
         </div>
         </form>
     </div>
+
+    <form id="logout" action="/logout" method ="POST">
+        <input type="submit" value="log out" id="logout"/>
+    </form>
 
 
 </div>  <!-- container (for bootstrap) -->

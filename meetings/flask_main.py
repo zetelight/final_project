@@ -56,6 +56,15 @@ APPLICATION_NAME = 'MeetMe class project'
 
 ####
 # Database connection per server process
+# Datbase format:
+# each person:
+# {
+#   "username": "usrname"
+#   "password": "pwd"
+#   "tags": ["id_1", "id_2"...] # record id of meeting created
+#   "creator": [{"meeting_id": "id_1" , "start_time": "xxxx", "end_time": "xxxxx"}, {"id_2":...}] # the info of a meeting, only creator has it
+#   "events": [{xxxxx}, {xxxxx}] # a list of dictionaries about events
+# }
 ###
 
 try:
@@ -79,13 +88,14 @@ except:
 @app.route("/home")
 def home():
     app.logger.debug("Entering home page")
-    # get the unique id.
-    unique_list = str(uuid.uuid4()).split("-")[0]
-    unique_id = "".join(unique_list)
-    flask.session["unique_id"] = unique_id
-    app.logger.debug(unique_id)
+    # get the unique id. If we have it, just use the old one
+    if not flask.session.get("unique_id"):
+        unique_list = str(uuid.uuid4()).split("-")[0]
+        unique_id = "".join(unique_list)
+        flask.session["unique_id"] = unique_id
+        app.logger.debug(unique_id)
 
-    if flask.session.get["logined"]:
+    if flask.session.get("logined"):
         return index()
     else:
         return render_template('login.html')
@@ -106,6 +116,8 @@ def login():
     if right_user:
         # the username exsits
         if input_password == right_user["password"]:
+            flask.session["username"] = input_username
+            app.logger.debug("Your name is {}".format(input_username))
             app.logger.debug("You logged in! with exsiting account")
             flask.session["logined"] = True
         else:
@@ -115,15 +127,21 @@ def login():
             flask.session["logined"] = False
     else:
         # if the username doesn't exist, let us create one!
+        # tags contains unique id of meeting instance
+        # creator contains the meeting created by the user
         user = {"username": input_username,
-                "password": input_password}
+                "password": input_password,
+                "tags": [],
+                "creator": []}
+        flask.session["username"] = input_username
+        app.logger.debug("New user's name is " + input_username)
         collection.insert_one(user)
         app.logger.debug("You logged in! with new account")
         flask.session["logined"] = True
     return home()
 
 
-@app.route("/logout")
+@app.route("/logout", methods=['POST'])
 def logout():
     flask.session["logined"] = False
     return home()
@@ -132,16 +150,20 @@ def logout():
 @app.route("/index/")
 def index():
     app.logger.debug("Entering index")
-    app.logger.debug("index id: " + id)
+    app.logger.debug("index id: {}".format(id))
     if 'begin_date' not in flask.session:
         init_session_values()
     return render_template('index.html')
 
-@app.route("/app/<id>")
+@app.route("/workonMeeting/<id>")
 def workonMeeting(id):
     flask.session["unique_id"] = id
-    # TODO set up id and time for members
-
+    # accroding to the id, find the creator property with this id
+    # then get the date/time range back
+    meeting_creator = collection.find_one({"creator.meeting_id" : flask.session["unique_id"]})
+    flask.session["real_start_time"] = meeting_creator['creator'][0]["start_time"] 
+    flask.session["real_end_time"] = meeting_creator['creator'][0]["end_time"]
+    flask.session["link"] = meeting_creator['creator'][0]["link"]
     return home()
 
 
@@ -284,39 +306,55 @@ def setrange():
     """
     User chose a date range with the bootstrap daterange
     widget.
+    effect: get the real start/end time
     """
     app.logger.debug("Entering setrange")
-    flask.flash("Setrange gave us '{}'".format(
-        request.form.get('daterange')))
-    daterange = request.form.get('daterange')
-    flask.session['daterange'] = daterange
-    daterange_parts = daterange.split()
-    app.logger.debug(daterange_parts)
+    # if we have real_start/end_time already, just skip this step
+    if not (flask.session.get("real_start_time") and flask.session.get("real_end_time") and flask.session.get("link")):
+        flask.flash("Setrange gave us '{}'".format(
+            request.form.get('daterange')))
+        daterange = request.form.get('daterange')
+        flask.session['daterange'] = daterange
+        daterange_parts = daterange.split()
+        app.logger.debug(daterange_parts)
 
-    # Sample format for date range_parts:
-    # ['11/16/2017', '5:00', '-', '12/29/2017', '4:30']
+        # Sample format for date range_parts:
+        # ['11/16/2017', '5:00', '-', '12/29/2017', '4:30']
 
-    flask.session['begin_date'] = interpret_date(daterange_parts[0])
-    flask.session['end_date'] = interpret_date(daterange_parts[3])
-    if flask.session['end_date'] < flask.session['begin_date']:
-        raise ValueError("end_date must be after begin_date")
-    flask.session['start_time'] = interpret_time(daterange_parts[1])
-    flask.session['end_time'] = interpret_time(daterange_parts[4])
-    if flask.session['end_time'] < flask.session['start_time']:
-        raise ValueError("end_time must be after start_time")
-    flask.session['real_start_time'] = splice_real_time(
-        flask.session['begin_date'], flask.session['start_time'])
-    flask.session['real_end_time'] = splice_real_time(
-        flask.session['end_date'], flask.session['end_time'])
+        flask.session['begin_date'] = interpret_date(daterange_parts[0])
+        flask.session['end_date'] = interpret_date(daterange_parts[3])
+        if flask.session['end_date'] < flask.session['begin_date']:
+            raise ValueError("end_date must be after begin_date")
+        flask.session['start_time'] = interpret_time(daterange_parts[1])
+        flask.session['end_time'] = interpret_time(daterange_parts[4])
+        if flask.session['end_time'] < flask.session['start_time']:
+            raise ValueError("end_time must be after start_time")
+        flask.session['real_start_time'] = splice_real_time(
+            flask.session['begin_date'], flask.session['start_time'])
+        flask.session['real_end_time'] = splice_real_time(
+            flask.session['end_date'], flask.session['end_time'])
 
-    app.logger.debug("Setrange parsed {} - {}  dates as {} - {}".format(
-        daterange_parts[0], daterange_parts[3],
-        flask.session['begin_date'], flask.session['end_date']))
-    app.logger.debug("Setrange parsed {} - {}  time as {} - {}".format(
-        daterange_parts[1], daterange_parts[4],
-        flask.session['start_time'], flask.session['end_time']))
-    app.logger.debug("real time is {} - {}".format(
-        flask.session['real_start_time'], flask.session['real_end_time']))
+        app.logger.debug("Setrange parsed {} - {}  dates as {} - {}".format(
+            daterange_parts[0], daterange_parts[3],
+            flask.session['begin_date'], flask.session['end_date']))
+        app.logger.debug("Setrange parsed {} - {}  time as {} - {}".format(
+            daterange_parts[1], daterange_parts[4],
+            flask.session['start_time'], flask.session['end_time']))
+        app.logger.debug("real time is {} - {}".format(
+            flask.session['real_start_time'], flask.session['real_end_time']))
+
+        # Since the user can set date/time range, he/she should be the creator
+        # so we store these infos into database including the link of meeting
+        
+        link = flask.url_for('home', _external = True)
+        flask.session["link"] = link
+        app.logger.debug("The meeting link is {}".format(link))
+        meeting_info = {"meeting_id": flask.session["unique_id"],
+                        "start_time": flask.session["real_start_time"],
+                        "end_time": flask.session["real_end_time"],
+                        "link": flask.session["link"]}
+        app.logger.debug("begin to record date/time range and creator info")
+        collection.update({"username": flask.session["username"]}, {'$push': {"creator": meeting_info}})
     return flask.redirect(flask.url_for("choose"))
 
 
@@ -376,10 +414,32 @@ def free():
     # My idea is pretty straightforward but takes long time
     # traverse the date range users picked. For each day, we find the free time
     # then append the free time into free_event_list
+
+    free_everyday(free_naive_events_list)
+
+    app.logger.debug(free_naive_events_list)
+    free_naive_events_list.sort(key=lambda e: e.get_start_time())
+    free_translated_list = []
+    for event in free_naive_events_list:
+        free_translated_list.append(event.translator_classToDict())
+    app.logger.debug(free_translated_list)
+    flask.session["free_translated_list"] = free_translated_list
+    flask.g.free_events = free_translated_list
+    return render_template('index.html')
+
+def free_everyday(busy_naive_events):
+    """
+    it is a helper function to compute  each day's free events and return a free time list
+    effect:
+        it modifies the content of busy_naive_events such that the list can have free events as well.
+    returns:
+        a naive free time list, elements' type is CalendarEvents
+    """
     start_date, start_time = flask.session['real_start_time'].split("T")
     end_date, end_time = flask.session['real_end_time'].split("T")
     days = diff_days(start_date, end_date)
     app.logger.debug(days)
+    final_naive_free_time = []
     # Reminder: ISO format "2017/01/01T08:00:00-8:00"
     arrow_date = arrow.get(flask.session['real_start_time'])
     for i in range(days):
@@ -391,7 +451,7 @@ def free():
         app.logger.debug(whole_day)
         # grab busy events in the same date
         single_day_events = CalendarEvent.Agenda()
-        for event in free_naive_events_list:
+        for event in busy_naive_events:
             if event.get_date() != whole_day.get_date():
                 single_day_events.append(event)
 
@@ -400,33 +460,54 @@ def free():
         # get the free time list for each single day
         free_time = single_day_events.complement(whole_day)
         app.logger.debug(free_time)
-        free_naive_events_list += free_time.toList()
-    app.logger.debug(free_naive_events_list)
-    free_naive_events_list.sort(key=lambda e: e.get_start_time())
-    free_translated_list = []
-    for event in free_naive_events_list:
-        free_translated_list.append(event.translator_classToDict())
-    app.logger.debug(free_translated_list)
-    flask.g.free_events = free_translated_list
-    return render_template('index.html')
+        final_naive_free_time += free_time.toList() # this list only contains free time
+        busy_naive_events += free_time.toList() # this list contains free and busy time
+    return final_naive_free_time
+
 
 
 @app.route("/_dataAllin", methods=["POST"])
 def dataAllin():
     """
-    submit final free/busy time choosed by users
+    submit final free/busy time choosed by users to his/her database
     """
-    # TODO read all free events and store them into database according to the user name and instance id
-    pass
+    # update events into database and also append the unique_id associated with the user
 
+    app.logger.debug("Entering submitting all data into database")
+    collection.update({"username": flask.session["username"]}, 
+                      {'$set': {"events": flask.session["free_translated_list"]},
+                      '$push': {"tags": flask.session["unique_id"]}})
+                      
+    return render_template("index.html")
 
 @app.route("/_checkFinalFree", methods=["POST"])
 def checkFinalFree():
     """
     Check final free time so far. It is only avaliable for creator
     """
-    # TODO compute final free time and then render template
-    pass
+    ## have a g varibale here, flask.g.final_free
+
+    # Grab busy events first
+    # find users who have same unique_id in their tags
+    app.logger.debug("Entering checking the final free time")
+    ultimate_translated_busy_time = []
+    for each_user in collection.find({"tag": {"$in": [flask.session["unique_id"]]}}):
+        for each_event in each_user:
+            if each_event["status"] == "BUSY":
+                ultimate_translated_busy_time.append(translator_dictToObject(each_event))
+    # get free time
+    ultimate_naive_free_time = free_everyday(ultimate_translated_busy_time)
+    ultimate_naive_free_time.sort(key=lambda e: e.get_start_time())
+
+    # translate them back
+    ultimate_translated_free_time = []
+    for event in ultimate_naive_free_time:
+        ultimate_translated_free_time.append(event.translator_classToDict())
+    app.logger.debug(ultimate_translated_free_time)
+    flask.g.ultimate_free_events = ultimate_translated_free_time
+    return render_template('index.html')
+
+
 
 ####
 #

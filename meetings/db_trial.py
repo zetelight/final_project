@@ -41,49 +41,67 @@ except Exception as err:
 #
 #
 
-collection.delete_many({})
+#collection.delete_many({})
 
-record = {"type": "dated_memo",
-          "date": arrow.utcnow().naive,
-          "summary": "This is a sample memo",
-          "description": "what happened?!"}
+# record = {"type": "dated_memo",
+#           "date": arrow.utcnow().naive,
+#           "summary": "This is a sample memo",
+#           "description": "what happened?!",
+#           "tag": []}
 
-string = "dated_memo"
-string2 = "what happened?!"
-print("Inserting 1")
-collection.insert_one(record)
-print("Inserted")
-print(record)
+# string = "dated_memo"
+# string2 = "what happened?!"
+# print("Inserting 1")
+# collection.insert_one(record)
+# print("Inserted")
+# print(record)
 
-print("try to find it------------")
-right_person = collection.find_one({"type": string})
-wrong_person = collection.find_one({"ha":"ha"})
-if right_person:
-    if string2 == right_person["description"]:
-        print("Your matched!")
-    print(right_person['_id'])
-    print("try to update it")  
-    collection.update({'type': string}, {'$set': {"events":{"start": 1, "end": 0}}}, upsert = True)
-else:
-    print("You find nothing")
+# print("try to find it------------")
+# right_person = collection.find_one({"type": string})
+# wrong_person = collection.find_one({"ha": "ha"})
+# if right_person:
+#     if string2 == right_person["description"]:
+#         print("Your matched!")
+#     print(right_person['_id'])
+#     print("try to update it")
+#     collection.update_one({'type': string}, {'$set': {"events": {"start": 1, "end": 0}}, "$push": {"tag": string2}})
+#     collection.update_one({'type': string}, {"$push": {"tag": string2}})
+# else:
+#     print("You find nothing")
 
-right_person = collection.find_one({"type": string})
-print(right_person)
+# right_person = collection.find_one({"type": string})
+# print(right_person)
 
-if wrong_person:
-    print("hahahaha")
-else:
-    print("wtf")
+# if wrong_person:
+#     print("hahahaha")
+# else:
+#     print("wtf")
 
+# record1 = {"type": "memo",
+#           "summary": "This is a sample memo NO1",
+#           "tag": ["haha", "heihei"]
+#           }
+# record2 = {"type": "memo",
+#           "date": arrow.utcnow().naive,
+#           "summary": "This is a sample memo NO2",
+#           "tag": ["haha"],
+#           "creator": [{"meeting_id": "12345", "start": "2017/01"}]
+#           }
+# collection.insert_one(record1)
+# collection.insert_one(record2)
 
+# for each in collection.find({"tag": {"$in": ["haha"]}}):
+#     print(each)
 
+# person = collection.find_one({"creator.meeting_id" : "12345"})
+# print(person['creator'][0]["start"])
 
 
 #
 # Read database --- May be useful to see what is in there,
 # even after you have a working 'insert' operation in the flask app,
 # but they aren't very readable.  If you have more than a couple records,
-# you'll want a loop for printing them in a nicer format. 
+# you'll want a loop for printing them in a nicer format.
 #
 
 
@@ -99,3 +117,7 @@ else:
 
 # print("Records: ")
 # print(records)
+
+records = []
+for record in collection.find({}):
+    print(record)
