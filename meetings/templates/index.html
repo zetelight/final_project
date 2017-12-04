@@ -62,11 +62,10 @@
 
     <h2>Share link with other members!</h2>
         <div>
-            {% if session.link is defined %}
                 <!--The button here should be only avaliable for creator-->
-                link: {{session.link}}/workonMeeting/{{session.unique_id}}
                 {% if session.real_start_time is not defined %}
                 <form id="checkFinal" action="/_checkFinalFree" method="POST">
+                    <p> Don't click the button until you submit your free/busy time</p>
                     <input type="submit" value="check final free time" id="finalfree"/>
                     {% if g.ultimate_free_events is defined %}
                         {% for event in ultimate_free_events %}
@@ -75,13 +74,13 @@
                     {% endif %}
                 </form>
                 {% endif %}
-            {% endif %}
         </div>
 
-    
+    <!--Only creator can see these content below-->
+    {% if session.real_start_time is not defined %}
     <h2>Date & Time range</h2>
+    <p>00:00 to 00:00 is not acceptable</p>
     <form action="/setrange" method="post">
-        {% if session.real_start_time is not defined %}
         <input type="text" name="daterange" size="12"
                 {% if session.daterange is defined %}
                value="{{ session.daterange }}"
@@ -89,7 +88,6 @@
                class="pull-down"
                style="background: #fff; cursor: pointer; padding: 5px 10px;
      border: 1px solid #ccc; width: 22em">
-        {% endif %}
         <script type="text/javascript">
             $(function () {
                 $('input[name="daterange"]').daterangepicker(
@@ -114,10 +112,17 @@
                 );
             });
         </script>
-        <input type="submit" value="Start!"/>
-
+        <input type="submit" value="Set time range"/>
     </form>
+    {% endif %}
 
+    <!--Member should only see this button-->
+    {% if session.real_start_time is defined %}
+    link: {{session.link}}workonMeeting/{{session.unique_id}}
+        <form action="/_start" method="post">
+            <input type="submit" value="Start"/>
+        </form>
+    {% endif %}
     <!--
     Show the calendar list (if we have it).  This will need to be turned into
     a form from which calendars can be picked. Up to three entries are
@@ -128,73 +133,58 @@
     <strong>Select calendars:</strong>
     <form id="select" action="/_select" method="POST">
         {% if g.calendars is defined %}
-            <div class="row">
                 {% for cal in g.calendars if cal.selected %}
                     <div class="col-md-4">
                         <input type="checkbox" name="token" id="token" value={{ cal.id }}>
                         {{ cal.summary }}
                     </div>
                     {% if loop.index is divisibleby 3 %}
-                        </div>
-                        <div class="row">
                     {% endif %}
                 {% endfor %}
-                </div>
         {% endif %}
-        <br/>
         <input type="submit" value="submit selected calendar" id="selectedCalendarButton"/>
     </form>
     </div>        
 
+    {% if g.events is defined %}
     <div>
         <form id ="free" action="/_free" method="POST">
-        {% if g.events is defined %}
-        <div>
-            <div>
+            <div class="col-md-4">
                 <strong> Your busy appointments below: (from left to right, top to bottom)</strong>
-            </div>
                 {% for each in g.events %}
                     {% for event in each %}
-                        <div class="col-md-4">
-                            <input type="checkbox" name="mark" id="mark" value={{ event.id }}>
-                            <li>start time: {{ event.start_time }} </li>
-                            <li>end time: {{ event.end_time }} </li>
-                            <li>Summary: {{ event.summary }} </li>
-                            <li>Description: {{ event.description }} </li>
-                        </div>
+                        <input type="checkbox" name="mark" id="mark" value={{ event.id }}>
+                        <li>start time: {{ event.start_time }} </li>
+                        <li>end time: {{ event.end_time }} </li>
+                        <li>Summary: {{ event.summary }} </li>
+                        <li>Description: {{ event.description }} </li>
                     {% endfor %}
-                    <br>
                 {% endfor %}
-        {% endif %}
-        <div>
+            </div>
             <input type="submit" value="mark events as free events" id="freeCalendarButton"/>
-        </div>
         </form>
     </div>
+    {% endif %}
 
+    {% if g.free_events is defined %}
     <div>
         <form id ="dataAllin" action="/_dataAllin" method="POST">
-        {% if g.free_events is defined %}
             {% for event in g.free_events %}
                 <strong>{{ event.status }} </strong> start: {{ event.start_time }} end: {{ event.end_time }} summary: {{ event.summary }} description: {{ event.description}} <br>
             {% endfor %}
-        {% endif %}
-        <div> 
+        <p> 
             You still can re-pick time-range(if you are creator), calendars, and re-mark some events as free time
             After you submit, all data will be recorded!
-        </div>
-        <div>
+        </p>
             <strong>After you submit your events, please log out</strong>
-            <div>
-                <input type="submit" value="Submit your decision" id="finalDecision"/>
-            </div>
-        </div>
+            <input type="submit" value="Submit your decision" id="finalDecision"/>
         </form>
     </div>
+    {% endif %}
 
-    <form id="logout" action="/logout" method ="POST">
-        <input type="submit" value="log out" id="logout"/>
-    </form>
+        <form id="logout" action="/logout" method ="POST">
+            <input type="submit" value="log out" id="logout"/>
+        </form>
 
 
 </div>  <!-- container (for bootstrap) -->

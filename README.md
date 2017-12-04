@@ -27,7 +27,7 @@ Finally creator can see free time during the date/time range by clicking ' check
 ## Test
 
 - nosetests is ready for testing but it only works for a specified calendar (my calendar actually)
-
+- To test "Share Link", using two different browsers will be strongly recommended (currently it only works on localhost. I may try to deploy it on Cloud-server)
 ## Usage
 
 ```
@@ -45,3 +45,4 @@ open your browser and go to localhost:5000
 ## Known bugs
 1. If the time range is from 00:00 to 00:00, there's no output. Please use 00:00 to 23:59
 2. ugly layout of page !
+3. If creator click "check final free" before he/she sumbit his/her busy time, it occrurs errors.

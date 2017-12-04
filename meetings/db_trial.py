@@ -41,7 +41,7 @@ except Exception as err:
 #
 #
 
-#collection.delete_many({})
+collection.delete_many({})
 
 # record = {"type": "dated_memo",
 #           "date": arrow.utcnow().naive,

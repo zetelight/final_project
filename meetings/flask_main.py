@@ -301,6 +301,15 @@ def oauth2callback():
 #
 #####
 
+
+@app.route('/_start', methods=['POST'])
+def start():
+    """
+    trivial form to start (since I am not familiar with button at all, so I still use form here)
+    """
+    app.logger.debug("Members start checking!")
+    return flask.render_template("index")
+
 @app.route('/setrange', methods=['POST'])
 def setrange():
     """
@@ -346,7 +355,7 @@ def setrange():
         # Since the user can set date/time range, he/she should be the creator
         # so we store these infos into database including the link of meeting
         
-        link = flask.url_for('home', _external = True)
+        link = flask.url_for('login', _external = True)
         flask.session["link"] = link
         app.logger.debug("The meeting link is {}".format(link))
         meeting_info = {"meeting_id": flask.session["unique_id"],
@@ -514,8 +523,6 @@ def checkFinalFree():
 #   Initialize session variables
 #
 ####
-
-
 def init_session_values():
     """
     Start with some reasonable defaults for date and time ranges.
