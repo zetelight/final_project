@@ -1,4 +1,6 @@
 # Under Construction. It will be ready for final project
+# I just found a bug I will finish it tomorrow
+# the logic of login has some errors
 
 ## Final project: meeting time maker
 
