@@ -60,24 +60,13 @@
         {% endif %}
     {% endwith %}
 
+    <!--Show link here-->
+    {% if session.real_start_time is defined %}
     <h2>Share link with other members!</h2>
-        <div>
-                <!--The button here should be only avaliable for creator-->
-                {% if session.real_start_time is not defined %}
-                <form id="checkFinal" action="/_checkFinalFree" method="POST">
-                    <p> Don't click the button until you submit your free/busy time</p>
-                    <input type="submit" value="check final free time" id="finalfree"/>
-                    {% if g.ultimate_free_events is defined %}
-                        {% for event in ultimate_free_events %}
-                        <strong>{{ event.status }} </strong> start: {{ event.start_time }} end: {{ event.end_time }} summary: {{ event.summary }} description: {{ event.description}} <br>
-                        {% endfor %}
-                    {% endif %}
-                </form>
-                {% endif %}
-        </div>
+    link: {{session.link}}
+    {% endif %}
 
     <!--Only creator can see these content below-->
-    {% if session.real_start_time is not defined %}
     <h2>Date & Time range</h2>
     <p>00:00 to 00:00 is not acceptable</p>
     <form action="/setrange" method="post">
@@ -114,15 +103,7 @@
         </script>
         <input type="submit" value="Set time range"/>
     </form>
-    {% endif %}
 
-    <!--Member should only see this button-->
-    {% if session.real_start_time is defined %}
-    link: {{session.link}}workonMeeting/{{session.unique_id}}
-        <form action="/_start" method="post">
-            <input type="submit" value="Start"/>
-        </form>
-    {% endif %}
     <!--
     Show the calendar list (if we have it).  This will need to be turned into
     a form from which calendars can be picked. Up to three entries are
@@ -176,15 +157,30 @@
             You still can re-pick time-range(if you are creator), calendars, and re-mark some events as free time
             After you submit, all data will be recorded!
         </p>
-            <strong>After you submit your events, please log out</strong>
             <input type="submit" value="Submit your decision" id="finalDecision"/>
         </form>
     </div>
     {% endif %}
 
-        <form id="logout" action="/logout" method ="POST">
+    <div>
+        <!--The button here should be only avaliable for creator-->
+            <form id="checkFinal" action="/_checkFinalFree" method="POST">
+                <p> Don't click the button until you submit your free/busy time</p>
+                    <input type="submit" value="check final free time" id="finalfree"/>
+            </form>
+    </div>
+
+    <strong> FINAL FREE TIME </strong> <br>
+    {% if g.ultimate_free_events is defined %}
+        {% for event in g.ultimate_free_events %}
+        <strong>{{ event.status }} </strong> start: {{ event.start_time }} end: {{ event.end_time }} summary: {{ event.summary }} description: {{ event.description}} <br>
+        {% endfor %}
+    {% endif %}
+
+    <strong>After you submit your events, please log out</strong>
+    <form id="logout" action="/logout" method ="POST">
             <input type="submit" value="log out" id="logout"/>
-        </form>
+    </form>
 
 
 </div>  <!-- container (for bootstrap) -->

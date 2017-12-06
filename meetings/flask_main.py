@@ -88,16 +88,23 @@ except:
 @app.route("/home")
 def home():
     app.logger.debug("Entering home page")
+    isCreator = False # If the user is creator, we don't have unique id for sure
     # get the unique id. If we have it, just use the old one
     if not flask.session.get("unique_id"):
         unique_list = str(uuid.uuid4()).split("-")[0]
         unique_id = "".join(unique_list)
         flask.session["unique_id"] = unique_id
+        isCreator = True # User is creator
         app.logger.debug(unique_id)
-
-    if flask.session.get("logined"):
-        return index()
+    app.logger.debug(flask.session.get("logined"))
+    if flask.session.get("logined") and isCreator:
+        # enter index for creator
+        return flask.redirect(flask.url_for('index'))
+    elif flask.session.get("logined") and not isCreator:
+        # enter member for members
+        return flask.redirect(flask.url_for('member'))
     else:
+        # wrong password
         return render_template('login.html')
 
 
@@ -147,13 +154,18 @@ def logout():
     return home()
 
 
-@app.route("/index/")
+@app.route("/index")
 def index():
     app.logger.debug("Entering index")
     app.logger.debug("index id: {}".format(id))
     if 'begin_date' not in flask.session:
         init_session_values()
     return render_template('index.html')
+
+@app.route("/member")
+def member():
+    app.logger.debug("Enterning member")
+    return render_template('member.html')
 
 @app.route("/workonMeeting/<id>")
 def workonMeeting(id):
@@ -307,8 +319,15 @@ def start():
     """
     trivial form to start (since I am not familiar with button at all, so I still use form here)
     """
-    app.logger.debug("Members start checking!")
-    return flask.render_template("index")
+    app.logger.debug("Checking credentials for Google calendar access for members")
+    credentials = valid_credentials()
+    if not credentials:
+        app.logger.debug("Redirecting to authorization")
+        return flask.redirect(flask.url_for('oauth2callback'))
+    gcal_service = get_gcal_service(credentials)
+    app.logger.debug("Returned from get_gcal_service")
+    flask.g.calendars = list_calendars(gcal_service)
+    return render_template('member.html')
 
 @app.route('/setrange', methods=['POST'])
 def setrange():
@@ -355,7 +374,13 @@ def setrange():
         # Since the user can set date/time range, he/she should be the creator
         # so we store these infos into database including the link of meeting
         
-        link = flask.url_for('login', _external = True)
+        # I hope I can give user a link http://xxxx/workonMeeting/unique_id
+        # so it can re-direct them to home page(actually users see login page) 
+        # it also can track user's info when they click the "submit" button
+        # However, currently I don't know how to use 
+        # link = flask.url_for('home', _external = True) to create this link
+        # it always give me http://home/workonMeeting/unique_id which is not valid 
+        link = "http://localhost:5000/workonMeeting/" + flask.session["unique_id"]
         flask.session["link"] = link
         app.logger.debug("The meeting link is {}".format(link))
         meeting_info = {"meeting_id": flask.session["unique_id"],
@@ -457,7 +482,6 @@ def free_everyday(busy_naive_events):
         date = new_arrow_date.isoformat().split("T")[0]
         whole_day = CalendarEvent.CalendarEvent(
             start_time, end_time, date, status="FREE")
-        app.logger.debug(whole_day)
         # grab busy events in the same date
         single_day_events = CalendarEvent.Agenda()
         for event in busy_naive_events:
@@ -681,6 +705,10 @@ def list_events(service, calendar_id):
     for event in event_list:
 
         # Deal with some non-standard event entries
+        # Initially, I want to deal with these edge cases which only have date
+        # but I found them are really useless so I don't want to append them into list
+        # start_time = event["start"]["date"]      
+        #   
         if event["status"] == "cancelled":
             continue
         if "description" in event:
@@ -691,14 +719,10 @@ def list_events(service, calendar_id):
             start_time = event["start"]["dateTime"]
         except KeyError:
             continue
-            # Initially, I want to deal with these edge cases which only have date
-            # but I found them are really useless so I don't want to append them into list
-            # start_time = event["start"]["date"]
         try:
             end_time = event["end"]["dateTime"]
         except KeyError:
             continue
-
         try:
             summary = event["summary"]
         except KeyError:
