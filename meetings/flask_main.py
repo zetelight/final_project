@@ -457,16 +457,17 @@ def free():
             if event.get_id() == mark:
                 free_naive_events_list.remove(event)
 
+    
     # My idea is pretty straightforward but takes long time
     # traverse the date range users picked. For each day, we find the free time
     # then append the free time into free_event_list
 
-    free_everyday(free_naive_events_list)
+    free_naive_appts_list = free_everyday(free_naive_events_list, True)
 
-    app.logger.debug(free_naive_events_list)
-    free_naive_events_list.sort(key=lambda e: e.get_start_time())
+    app.logger.debug(free_naive_appts_list)
+    free_naive_appts_list.sort(key=lambda e: e.get_begin())
     free_translated_list = []
-    for event in free_naive_events_list:
+    for event in free_naive_appts_list:
         free_translated_list.append(event.translator_classToDict())
     app.logger.debug(free_translated_list)
     flask.session["free_translated_list"] = free_translated_list
@@ -477,14 +478,23 @@ def free():
     else:
         return render_template('member.html')
 
-def free_everyday(busy_naive_events):
+def free_everyday(busy_naive_events, addorNot):
     """
     it is a helper function to compute  each day's free events and return a free time list
+    Args:
+        busy_naive_events: busy events, type is CalendarEvents
+        addorNot: boolean, indicating whether we have to add free time to busy_naive_events
     effect:
         it modifies the content of busy_naive_events such that the list can have free events as well.
     returns:
         a naive free time list, elements' type is CalendarEvents
     """
+    free_naive_appt_list = []
+    # translate CalendarEvent to appt
+    for event in busy_naive_events:
+        free_naive_appt_list.append(event.translator_toAppt())
+        app.logger.debug(event)
+
     start_date, start_time = flask.session['real_start_time'].split("T")
     end_date, end_time = flask.session['real_end_time'].split("T")
     days = diff_days(start_date, end_date)
@@ -498,20 +508,27 @@ def free_everyday(busy_naive_events):
         date = new_arrow_date.isoformat().split("T")[0]
         whole_day = CalendarEvent.CalendarEvent(
             start_time, end_time, date, status="FREE")
+        whole_day_appt = whole_day.translator_toAppt()
+
         # grab busy events in the same date
         single_day_events = CalendarEvent.Agenda()
         for event in busy_naive_events:
-            if event.get_date() != whole_day.get_date():
-                single_day_events.append(event)
+            if event.get_date() == whole_day.get_date():
+                appt = event.translator_toAppt()
+                single_day_events.append(appt)
 
         app.logger.debug(single_day_events)
 
         # get the free time list for each single day
-        free_time = single_day_events.complement(whole_day)
+        free_time = single_day_events.complement(whole_day_appt)
         app.logger.debug(free_time)
-        final_naive_free_time += free_time.toList() # this list only contains free time
-        busy_naive_events += free_time.toList() # this list contains free and busy time
-    return final_naive_free_time
+        for event in free_time:
+            free_naive_appt_list.append(event)
+            final_naive_free_time.append(event)
+    if addorNot:
+        return free_naive_appt_list
+    else:
+        return final_naive_free_time
 
 
 
@@ -544,13 +561,16 @@ def checkFinalFree():
     # find users who have same unique_id in their tags
     app.logger.debug("Entering checking the final free time")
     ultimate_translated_busy_time = []
-    for each_user in collection.find({"tag": {"$in": [flask.session["unique_id"]]}}):
-        for each_event in each_user:
+    app.logger.debug(flask.session["unique_id"])
+    for each_user in collection.find({"tags": {"$in": [flask.session["unique_id"]]}}):
+        app.logger.debug(each_user)
+        for each_event in each_user["events"]:
+            app.logger.debug(each_event)
             if each_event["status"] == "BUSY":
                 ultimate_translated_busy_time.append(translator_dictToObject(each_event))
     # get free time
-    ultimate_naive_free_time = free_everyday(ultimate_translated_busy_time)
-    ultimate_naive_free_time.sort(key=lambda e: e.get_start_time())
+    ultimate_naive_free_time = free_everyday(ultimate_translated_busy_time, False)
+    ultimate_naive_free_time.sort(key=lambda e: e.get_begin())
 
     # translate them back
     ultimate_translated_free_time = []
@@ -792,11 +812,9 @@ def translator_dictToObject(event):
     s_time = event["start_time"].split("T")[1]
     e_time = event["end_time"].split("T")[1]
     date = event["start_time"].split("T")[0]
-    id = event["id"]
-    summary = event["summary"]
     desc = event["description"]
     event_obj = CalendarEvent.CalendarEvent(
-        s_time, e_time, date, summary, desc, id)
+        s_time, e_time, date, desc)
     return event_obj
 
 

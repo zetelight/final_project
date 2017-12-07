@@ -41,7 +41,7 @@ except Exception as err:
 #
 #
 
-#collection.delete_many({})
+collection.delete_many({})
 
 # record = {"type": "dated_memo",
 #           "date": arrow.utcnow().naive,
@@ -79,22 +79,27 @@ except Exception as err:
 
 # record1 = {"type": "memo",
 #           "summary": "This is a sample memo NO1",
-#           "tag": ["haha", "heihei"]
+#           "tag": ["haha", "heihei"],
+#           "event": [{"ds": "ds"}, {"dsadas": "dasdassssssssssssssssssssssssssssdas"}]
 #           }
 # record2 = {"type": "memo",
 #           "date": arrow.utcnow().naive,
 #           "summary": "This is a sample memo NO2",
 #           "tag": ["haha"],
+#           "event": [{"ds": "ds"}, {"dsadas": "dasdasdas"}],
 #           "creator": [{"meeting_id": "12345", "start": "2017/01"}]
 #           }
 # collection.insert_one(record1)
 # collection.insert_one(record2)
+# list2 = []
+# for each in collection.find({"tag": {"$in": ["heihei"]}}):
+#     for each_event in each["event"]:
+#         list2.append(each_event)
 
-# for each in collection.find({"tag": {"$in": ["haha"]}}):
-#     print(each)
+# print(list2)
 
-# person = collection.find_one({"creator.meeting_id" : "12345"})
-# print(person['creator'][0]["start"])
+#person = collection.find_one({"creator.meeting_id" : "12345"})
+#print(person['creator'][0]["start"])
 
 
 #

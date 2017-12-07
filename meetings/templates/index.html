@@ -137,7 +137,6 @@
                         <input type="checkbox" name="mark" id="mark" value={{ event.id }}>
                         <li>start time: {{ event.start_time }} </li>
                         <li>end time: {{ event.end_time }} </li>
-                        <li>Summary: {{ event.summary }} </li>
                         <li>Description: {{ event.description }} </li>
                     {% endfor %}
                 {% endfor %}
@@ -151,7 +150,7 @@
     <div>
         <form id ="dataAllin" action="/_dataAllin" method="POST">
             {% for event in g.free_events %}
-                <strong>{{ event.status }} </strong> start: {{ event.start_time }} end: {{ event.end_time }} summary: {{ event.summary }} description: {{ event.description}} <br>
+                <strong>{{ event.status }} </strong> start: {{ event.start_time }} end: {{ event.end_time }} description: {{ event.description}} <br>
             {% endfor %}
         <p> 
             You still can re-pick time-range(if you are creator), calendars, and re-mark some events as free time
@@ -173,7 +172,7 @@
     <strong> FINAL FREE TIME </strong> <br>
     {% if g.ultimate_free_events is defined %}
         {% for event in g.ultimate_free_events %}
-        <strong>{{ event.status }} </strong> start: {{ event.start_time }} end: {{ event.end_time }} summary: {{ event.summary }} description: {{ event.description}} <br>
+        <strong>{{ event.status }} </strong> start: {{ event.start_time }} end: {{ event.end_time }} description: {{ event.description}} <br>
         {% endfor %}
     {% endif %}
 

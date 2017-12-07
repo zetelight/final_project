@@ -7,7 +7,7 @@ Snarf appointment data from a selection of a user's Google calendars with busy/f
 - Contact Email: achen@uoregon.edu
 - Contact Address: University of Oregon, 1585 E 13th Ave, Eugene, OR 97403
 
-## Functions (will come soon)
+## Functions
 
 Application allows a creator to choose a date and time range for listing all free and busy events during that period
 
@@ -46,4 +46,3 @@ open your browser and go to localhost:5000
 3. If creator click "check final free" before he/she sumbit his/her busy time, it occrurs errors. However it will not happen again if he/she already done that. It may potentially causes the 4th bug below.
 4. Since I use flask.session to store date/unique_id, users will lose them if they close their broswers (they cannot go back to check final free time)
    My idea is trying to use username to get data/unique_id again. Howver, no more time for me to revise them. Hence, I recommend grader opens one browser to create creator. Then enter "shared link" in another browser. After both of them submitted free/busy time, grader can test "checkfinalfree" button at first browser.
-5. Wrong computation of free time. Still working with it.
