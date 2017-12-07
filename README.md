@@ -1,8 +1,4 @@
-# Under Construction. It will be ready for final project
-# I just found a bug I will finish it tomorrow
-# the logic of login has some errors
-
-## Final project: meeting time maker
+## Final project: meeting time maker 
 
 Snarf appointment data from a selection of a user's Google calendars with busy/free time options available
 
@@ -48,3 +44,6 @@ open your browser and go to localhost:5000
 1. If the time range is from 00:00 to 00:00, there's no output. Please use 00:00 to 23:59
 2. ugly layout of page !
 3. If creator click "check final free" before he/she sumbit his/her busy time, it occrurs errors.
+4. Since I use flask.session to store date/unique_id, users will lose them if they close their broswers (they cannot go back to check final free time)
+   My idea is trying to use username to get data/unique_id again. Howver, no more time for me to revise them. Hence, I recommend grader opens one browser to create creator. Then enter "shared link" in another browser. After both of them submitted free/busy time, grader can test "checkfinalfree" button at first browser.
+5. Wrong computation of free time. Still working with it.

@@ -88,19 +88,23 @@ except:
 @app.route("/home")
 def home():
     app.logger.debug("Entering home page")
-    isCreator = False # If the user is creator, we don't have unique id for sure
+    if not flask.session.get("isCreator"):
+        flask.session["isCreator"] = False
+
     # get the unique id. If we have it, just use the old one
+    # Also, if user don't has unique_id, he/she is creator 
     if not flask.session.get("unique_id"):
         unique_list = str(uuid.uuid4()).split("-")[0]
         unique_id = "".join(unique_list)
         flask.session["unique_id"] = unique_id
-        isCreator = True # User is creator
+        flask.session["isCreator"] = True # User is creator
         app.logger.debug(unique_id)
+
     app.logger.debug(flask.session.get("logined"))
-    if flask.session.get("logined") and isCreator:
+    if flask.session.get("logined") and flask.session["isCreator"]:
         # enter index for creator
         return flask.redirect(flask.url_for('index'))
-    elif flask.session.get("logined") and not isCreator:
+    elif flask.session.get("logined") and not flask.session["isCreator"]:
         # enter member for members
         return flask.redirect(flask.url_for('member'))
     else:
@@ -193,7 +197,11 @@ def choose():
     gcal_service = get_gcal_service(credentials)
     app.logger.debug("Returned from get_gcal_service")
     flask.g.calendars = list_calendars(gcal_service)
-    return render_template('index.html')
+    if flask.session["isCreator"]:
+        # Creator will go index
+        return render_template('index.html')
+    else:
+        return render_template('member.html')
 
 
 ####
@@ -395,7 +403,7 @@ def setrange():
 @app.route("/_select", methods=["POST"])
 def select():
     """
-    According to marked checkbox, re-direct to index.html
+    According to marked checkbox, re-direct to index.html or member.html
     """
     credentials = valid_credentials()
     if not credentials:
@@ -414,7 +422,11 @@ def select():
     app.logger.debug(events_list_bycalendar)
     flask.session["translated_events"] = events_list_bycalendar
     flask.g.events = events_list_bycalendar
-    return render_template('index.html')
+    if flask.session["isCreator"]:
+        # Creator will go index
+        return render_template('index.html')
+    else:
+        return render_template('member.html')
 
 
 @app.route("/_free", methods=["POST"])
@@ -459,7 +471,11 @@ def free():
     app.logger.debug(free_translated_list)
     flask.session["free_translated_list"] = free_translated_list
     flask.g.free_events = free_translated_list
-    return render_template('index.html')
+    if flask.session["isCreator"]:
+        # Creator will go index
+        return render_template('index.html')
+    else:
+        return render_template('member.html')
 
 def free_everyday(busy_naive_events):
     """
@@ -511,7 +527,11 @@ def dataAllin():
                       {'$set': {"events": flask.session["free_translated_list"]},
                       '$push': {"tags": flask.session["unique_id"]}})
                       
-    return render_template("index.html")
+    if flask.session["isCreator"]:
+        # Creator will go index
+        return render_template('index.html')
+    else:
+        return render_template('member.html')
 
 @app.route("/_checkFinalFree", methods=["POST"])
 def checkFinalFree():

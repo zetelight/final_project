@@ -46,7 +46,7 @@
 
         {% if session.real_start_time is defined %}
         <h2>Share link with other members!</h2>
-        link: {{session.link}}/{{session.unique_id}}
+        link: {{session.link}}
         <form action="/_start" method="post">
             <input type="submit" value="Start" />
         </form>
