@@ -9,7 +9,7 @@ FREE = "FREE"
 
 
 class CalendarEvent(object):
-    def __init__(self, start_time, end_time, date, summary=None, description=None, id=None, status=BUSY):
+    def __init__(self, start_time, end_time, date, summary='None', description='None', id=None, status=BUSY):
         """
         Initialization method for CalendarEvent
         Args:
@@ -146,7 +146,7 @@ class Appt:
     date and time, and ending at a later time the same day.
     """
     
-    def __init__(self, day, begin, end, desc, status=FREE):
+    def __init__(self, day, begin, end, desc='None', status=FREE):
         """Create an appointment on date
         from begin time to end time.
         
@@ -298,6 +298,7 @@ class Appt:
         """
         if desc=="":
             desc = self.desc + " " + other.desc
+        
         assert(self.overlaps(other))
         # We know the day must be the same. 
         # Find overlap of times: 
